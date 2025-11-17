@@ -27,6 +27,7 @@ gi.require_version('AyatanaAppIndicator3', '0.1')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, AyatanaAppIndicator3, Gio, Pango
 from PIL import Image
 from filelock import FileLock, Timeout
+import faugus_plugins as Plugins
 
 class PathManager:
     @staticmethod
@@ -428,6 +429,9 @@ class Main(Gtk.Window):
             signal.signal(signal.SIGCHLD, self.on_child_process_closed)
         else:
             GLib.timeout_add_seconds(1, self.check_running_processes)
+
+        # Plugins Hook
+        Plugins.main_window_hook(self)
 
     def on_child_process_closed(self, signum, frame):
         for title, processo in list(self.processos.items()):
@@ -3383,6 +3387,8 @@ class Settings(Gtk.Dialog):
             self.checkbox_gamemode.set_sensitive(False)
             self.checkbox_gamemode.set_active(False)
             self.checkbox_gamemode.set_tooltip_text(_("Tweaks your system to improve performance. NOT INSTALLED."))
+
+        Plugins.settings_window_hook(self)
 
     def get_dir_size(self, path):
         total = 0
@@ -6937,6 +6943,7 @@ def faugus_launcher():
     os.environ["GTK_USE_PORTAL"] = "1"
     update_games_file()
     apply_dark_theme()
+    Plugins.initialize()
 
     if len(sys.argv) == 1:
         app = Main()
